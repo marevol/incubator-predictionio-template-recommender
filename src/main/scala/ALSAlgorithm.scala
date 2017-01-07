@@ -31,6 +31,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
   }
 
   def train(sc: SparkContext, data: PreparedData): ALSModel = {
+    sc.setCheckpointDir("checkpoint/")
     // MLLib ALS cannot handle empty training data.
     require(!data.ratings.take(1).isEmpty,
       s"RDD[Rating] in PreparedData cannot be empty." +
@@ -59,13 +60,17 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
       //alpha = 1.0,
       //seed = seed)
 
-    val m = ALS.train(
-      ratings = mllibRatings,
-      rank = ap.rank,
-      iterations = ap.numIterations,
-      lambda = ap.lambda,
-      blocks = -1,
-      seed = seed)
+    val als = new ALS()
+    als.setUserBlocks(-1)
+    als.setProductBlocks(-1)
+    als.setRank(ap.rank)
+    als.setIterations(ap.numIterations)
+    als.setLambda(ap.lambda)
+    als.setImplicitPrefs(false)
+    als.setAlpha(1.0)
+    als.setSeed(seed)
+    als.setCheckpointInterval(2)
+    val m = als.run(mllibRatings)
 
     new ALSModel(
       rank = m.rank,
