@@ -4,12 +4,12 @@ package org.apache.spark.mllib.recommendation
 // its constructor in order to save and load the model
 
 import org.template.recommendation.ALSAlgorithmParams
-import org.apache.predictionio.controller.IPersistentModel
-import org.apache.predictionio.controller.IPersistentModelLoader
 import org.apache.predictionio.data.storage.BiMap
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import org.apache.predictionio.controller.PersistentModel
+import org.apache.predictionio.controller.PersistentModelLoader
 
 class ALSModel(
     override val rank: Int,
@@ -18,7 +18,7 @@ class ALSModel(
     val userStringIntMap: BiMap[String, Int],
     val itemStringIntMap: BiMap[String, Int])
   extends MatrixFactorizationModel(rank, userFeatures, productFeatures)
-  with IPersistentModel[ALSAlgorithmParams] {
+  with PersistentModel[ALSAlgorithmParams] {
 
   def save(id: String, params: ALSAlgorithmParams,
     sc: SparkContext): Boolean = {
@@ -46,7 +46,7 @@ class ALSModel(
 }
 
 object ALSModel
-  extends IPersistentModelLoader[ALSAlgorithmParams, ALSModel] {
+  extends PersistentModelLoader[ALSAlgorithmParams, ALSModel] {
   def apply(id: String, params: ALSAlgorithmParams,
     sc: Option[SparkContext]) = {
     new ALSModel(
